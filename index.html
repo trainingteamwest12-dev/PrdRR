@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Berger Product Guide</title>
+<style>
+  :root{
+    --ink:#1b1f23; --paper:#f6f4ef; --card:#ffffff;
+    --berger-red:#c8102e; --berger-navy:#0f2a4a; --line:#e2ddd1; --muted:#6b6459;
+    --good:#1f7a4d; --accent-tint:#fbe9ea; --warn-bg:#fff4e0; --warn-bd:#e0a93a;
+    --fm-bg:#fff8e1; --fm-bd:#c9960c; --hi-bg:#eaf6ef; --hi-bd:#2f8f5b;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:'Segoe UI',Roboto,-apple-system,sans-serif;background:var(--paper);color:var(--ink);-webkit-tap-highlight-color:transparent;}
+  .app{max-width:760px;margin:0 auto;min-height:100vh;background:var(--paper);display:flex;flex-direction:column;}
+  header{background:var(--berger-navy);color:#fff;padding:16px 20px 14px;position:sticky;top:0;z-index:10;}
+  header .brand{display:flex;align-items:center;justify-content:space-between;}
+  header .brand-mark{font-weight:800;font-size:19px;letter-spacing:0.3px;}
+  header .brand-mark span{color:#ff5b6e;}
+  header .tag{font-size:10.5px;color:#b9c6d6;margin-top:2px;letter-spacing:1.3px;text-transform:uppercase;}
+  header .officer-chip{display:none;font-size:11px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.25);padding:6px 10px;border-radius:20px;color:#e7edf4;white-space:nowrap;}
+  main{flex:1;padding:18px 18px 60px;}
+  .screen{display:none;} .screen.active{display:block;animation:fade .25s ease;}
+  @keyframes fade{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+  .entry-card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:24px 22px 26px;box-shadow:0 2px 10px rgba(15,42,74,0.05);}
+  .entry-card h1{font-size:19px;margin:0 0 4px;color:var(--berger-navy);}
+  .entry-card p.sub{margin:0 0 22px;font-size:13px;color:var(--muted);line-height:1.5;}
+  .field{margin-bottom:16px;}
+  .field label{display:block;font-size:12.5px;font-weight:600;color:var(--berger-navy);margin-bottom:6px;}
+  .field label .req{color:var(--berger-red);margin-left:2px;}
+  .field label .opt{color:var(--muted);font-weight:400;margin-left:4px;}
+  .field input, .field select{width:100%;padding:11px 12px;border:1.5px solid var(--line);border-radius:8px;font-size:14.5px;background:#fcfbf9;color:var(--ink);font-family:inherit;}
+  .field input:focus, .field select:focus{outline:none;border-color:var(--berger-navy);background:#fff;}
+  .field.error input{border-color:var(--berger-red);background:var(--accent-tint);}
+  .field .err-msg{display:none;color:var(--berger-red);font-size:11.5px;margin-top:5px;}
+  .field.error .err-msg{display:block;}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  @media(max-width:480px){.row2{grid-template-columns:1fr;}}
+  .btn-primary{width:100%;padding:13px;border:none;border-radius:9px;background:var(--berger-red);color:#fff;font-size:15px;font-weight:700;letter-spacing:0.3px;cursor:pointer;margin-top:6px;}
+  .btn-primary:active{transform:scale(0.99);}
+  .selector-card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px 18px;margin-bottom:14px;}
+  .selector-card label{font-size:11.5px;font-weight:700;color:var(--berger-navy);text-transform:uppercase;letter-spacing:0.5px;}
+  .selector-card select{width:100%;margin-top:8px;padding:12px;border:1.5px solid var(--berger-navy);border-radius:8px;font-size:14.5px;font-weight:600;color:var(--berger-navy);background:#fff;}
+  .price-banner{background:var(--warn-bg);border:1.5px solid var(--warn-bd);border-radius:12px;padding:12px 14px;margin-bottom:16px;font-size:12px;line-height:1.55;color:#5a4108;}
+  .price-banner b{color:#7a3d00;}
+  .product-hero{background:linear-gradient(135deg,var(--berger-navy),#173a63);color:#fff;border-radius:14px;padding:16px 18px;margin-bottom:14px;}
+  .product-hero .cat{font-size:10px;letter-spacing:1.3px;text-transform:uppercase;color:#9fb4cc;}
+  .product-hero h2{margin:4px 0 6px;font-size:19px;}
+  .product-hero .usp{font-size:12.5px;color:#dbe4ee;line-height:1.5;}
+  .pill-row{display:flex;gap:7px;flex-wrap:wrap;margin-top:11px;}
+  .pill{background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.25);border-radius:20px;padding:5px 10px;font-size:11px;}
+  .section-title{font-size:12.5px;font-weight:700;color:var(--berger-navy);text-transform:uppercase;letter-spacing:0.5px;margin:20px 0 10px;display:flex;align-items:center;gap:8px;}
+  .section-title::before{content:"";width:4px;height:13px;background:var(--berger-red);border-radius:2px;}
+  .table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:#fff;}
+  table{border-collapse:collapse;width:100%;min-width:560px;font-size:12.3px;}
+  thead th{background:var(--berger-navy);color:#fff;text-align:left;padding:10px 11px;font-size:11px;text-transform:uppercase;letter-spacing:0.3px;position:sticky;top:0;}
+  tbody td{padding:9px 11px;border-bottom:1px solid var(--line);vertical-align:top;line-height:1.4;}
+  tbody tr:nth-child(even){background:#faf9f6;}
+  tbody td.attr-col{font-weight:700;color:var(--berger-navy);white-space:nowrap;background:#f1ede3;}
+  td.us-col{background:var(--accent-tint);font-weight:600;}
+  tr.price-row td{background:#fff8ec;}
+  tr.price-row td.attr-col{background:#f5e6c4;}
+  .badge-win{display:inline-block;background:var(--good);color:#fff;font-size:9px;font-weight:700;padding:2px 5px;border-radius:4px;margin-left:5px;vertical-align:middle;}
+  .badge-est{display:inline-block;background:#a15c00;color:#fff;font-size:8.5px;font-weight:700;padding:2px 5px;border-radius:4px;margin-left:5px;vertical-align:middle;}
+  .talk-card{background:#fff;border:1px solid var(--line);border-left:4px solid var(--berger-red);border-radius:0 10px 10px 0;padding:13px 15px;margin-top:6px;font-size:12.5px;line-height:1.6;color:#2b2b2b;}
+  .talk-card b{color:var(--berger-navy);}
+  .info-list{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 16px;}
+  .info-list ul{margin:0;padding-left:18px;}
+  .info-list li{margin-bottom:7px;font-size:13px;line-height:1.45;}
+  .tds-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px;}
+  .tds-item{background:#f1ede3;border-radius:8px;padding:8px 10px;}
+  .tds-item.price-item{background:#fff0d6;}
+  .tds-item .k{font-size:10px;text-transform:uppercase;letter-spacing:0.4px;color:var(--muted);font-weight:700;}
+  .tds-item .v{font-size:12.5px;color:var(--berger-navy);font-weight:600;margin-top:2px;}
+  .source-note{margin-top:10px;font-size:10.5px;color:var(--muted);background:#fbf9f4;border:1px dashed var(--line);border-radius:8px;padding:8px 10px;line-height:1.5;}
+  .source-note b{color:var(--berger-navy);}
+  .price-note{margin-top:8px;font-size:10.5px;color:#7a3d00;background:#fff8ec;border:1px dashed var(--warn-bd);border-radius:8px;padding:8px 10px;line-height:1.5;}
+  .price-note b{color:#7a3d00;}
+  .fm-card{background:var(--fm-bg);border:1.5px solid var(--fm-bd);border-radius:12px;padding:13px 15px;margin-top:14px;}
+  .fm-card .fm-title{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;color:#8a6400;margin-bottom:6px;display:flex;align-items:center;gap:6px;}
+  .fm-card .fm-title::before{content:"★";}
+  .fm-card p{margin:0 0 6px;font-size:13px;line-height:1.55;color:#4a3600;}
+  .fm-card .fm-demo{margin-top:8px;background:#fff;border:1px dashed var(--fm-bd);border-radius:8px;padding:9px 11px;font-size:12.5px;color:#4a3600;line-height:1.5;}
+  .fm-card .fm-demo b{color:#8a6400;}
+  .hi-card{background:var(--hi-bg);border:1.5px solid var(--hi-bd);border-radius:12px;padding:13px 15px;margin-top:14px;}
+  .hi-card .hi-title{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;color:#1f6b45;margin-bottom:6px;}
+  .hi-card p{margin:0;font-size:14px;line-height:1.7;color:#173d2a;font-family:'Nirmala UI','Noto Sans Devanagari',sans-serif;}
+  footer.note{margin-top:24px;font-size:10.5px;color:var(--muted);text-align:center;line-height:1.6;}
+  .back-btn{display:inline-flex;align-items:center;gap:6px;background:none;border:none;color:var(--berger-navy);font-size:13px;font-weight:600;cursor:pointer;padding:4px 0;margin-bottom:14px;}
+  .no-comp{font-size:12px;color:var(--muted);font-style:italic;padding:10px 2px 0;}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="brand">
+      <div>
+        <div class="brand-mark">BERGER PRODUCT<span> GUIDE</span></div>
+        <div class="tag">Field Ready Reckoner</div>
+      </div>
+      <div class="officer-chip" id="officerChip"></div>
+    </div>
+  </header>
+
+  <main>
+    <!-- ENTRY -->
+    <section class="screen active" id="screen-entry">
+      <div class="entry-card">
+        <h1>Officer Sign-in</h1>
+        <p class="sub">Enter your details once to start your field session.</p>
+
+        <div class="field" id="f-empid">
+          <label>Employee ID <span class="req">*</span></label>
+          <input type="text" id="empid" placeholder="e.g. BPI10234" autocomplete="off">
+          <div class="err-msg">Employee ID is mandatory to continue.</div>
+        </div>
+
+        <div class="field"><label>Name</label><input type="text" id="ename" placeholder="Full name"></div>
+
+        <div class="row2">
+          <div class="field"><label>Depot Name</label><input type="text" id="depot" placeholder="e.g. Pune Depot"></div>
+          <div class="field"><label>Region</label>
+            <select id="region"><option value="">Select region</option><option>West</option><option>North</option><option>South</option><option>East</option><option>Central</option></select>
+          </div>
+        </div>
+
+        <div class="row2">
+          <div class="field"><label>TTY (Designation)</label>
+            <select id="tty"><option value="">Select role</option><option>Territory Sales Officer</option><option>Area Sales Manager</option><option>Dealer Development Officer</option><option>Channel Sales Executive</option><option>Other</option></select>
+          </div>
+          <div class="field"><label>Email ID <span class="opt">(optional)</span></label>
+            <input type="email" id="email" placeholder="name@bergerindia.com">
+          </div>
+        </div>
+
+        <button class="btn-primary" onclick="submitEntry()">Continue to Product Info →</button>
+      </div>
+    </section>
+
+    <!-- PRODUCT -->
+    <section class="screen" id="screen-product">
+      <button class="back-btn" onclick="goBack()">← Change officer details</button>
+
+      <div class="price-banner">
+        <b>⚠ Pricing Notice:</b> Indicative MRP figures in this tool are compiled from public online retail/marketplace listings — <b>NOT</b> official Berger or competitor price lists. They can be outdated, region-specific, or wrong. <b>Always cross-verify against the current DPL before quoting a customer or dealer.</b>
+      </div>
+
+      <div class="selector-card">
+        <label>Select Berger Product</label>
+        <select id="productSelect" onchange="renderProduct()"></select>
+      </div>
+      <div id="productOutput"></div>
+    </section>
+  </main>
+</div>
+
+<script>
+/* ---------- helpers ---------- */
+function R(attr,us,win,c){ return {attr:attr, us:us, win:!!win, c:c}; }
+function PR(us,c){ return {attr:"Indicative MRP*", us:us, win:false, c:c, isPrice:true}; }
+
+/* ---------- PRODUCT DATABASE ---------- */
+const PRODUCTS = {
+
+/* ===== WALL PUTTY ===== */
+bison_putty:{cat:"Wall Putty",name:"Bison Wall Putty",type:"compare",
+  usp:"Super fine cement blended with flexible polymer and cellulose for excellent adhesion and tensile strength.",
+  pills:["Self Curing","High Abrasion Resistance","Excellent Adhesion","Cement Based"],
+  ourCol:"Bison Wall Putty", competitors:["JK Wall Putty","Birla White WallCare Putty"],
+  rows:[R("Coverage","7-9 sqft/2Coat/Kg",false,["7 sqft/2Coat/Kg","8-9 sqft/2Coat/Kg"]),
+        R("Dilution","45-50%",false,["38%","36-40%"]),
+        R("Whiteness","High",true,["Less than Bison","High"]),
+        R("Finish","Matt",false,["Dull Matt","Matt"]),
+        R("Unique Advantage","Competitively Economic Price",true,["-","-"]),
+        PR("₹19-24/Kg",["₹18-22/Kg","₹20-25/Kg"])],
+  hindi:"बाइसन वॉल पुट्टी सीमेंट से बनी है और दीवार को मज़बूत चिपकाव देती है। यह किफायती दाम में बेहतरीन फिनिश और सफेदी देती है।"},
+waterproof_putty:{cat:"Wall Putty",name:"HomeShield Waterproof Putty",type:"compare",
+  usp:"Cured surface provides excellent hydrophobicity (Lotus Bead Effect) with anti-efflorescence beating traditional powder putties.",
+  pills:["Water Repellent - Lotus Bead Effect","Anti Efflorescent","Seamless Pinhole Filling"],
+  ourCol:"Waterproof Putty", competitors:["Smart Care WP Putty","Birla White Seal WP","JK Shieldmax WP Putty"],
+  rows:[R("Coverage","10-15 sqft/2Coat/Kg",false,["11-16 sqft/2Coat/Kg","16-19 sqft/2Coat/Kg","20 sqft/2Coat/Kg"]),
+        R("Dilution","40%",false,["40%","40%","40-50%"]),
+        R("Finish","Smooth Matt",false,["Smooth Matt","Matt","Matt"]),
+        R("Unique Advantage","Alkali Resistant, Acrylic",true,["Alkali Resistant, Breathable","Water Repellent","Water Repellent"]),
+        PR("₹28-34/Kg",["₹30-36/Kg","₹26-32/Kg","₹27-33/Kg"])],
+  firstMover:"Berger was the first brand in India to put silicon inside a wall putty. The silicon makes water sit on the wall as small round beads and roll off, instead of soaking in — this is called the Lotus Bead Effect.",
+  firstMoverDemo:"Demo Tip: Carry a small painted sample board/glass piece. In front of the customer, pour a few drops of water on it. Show how the water forms round beads and rolls off, just like on a lotus leaf. This simple 'water bead test' is the strongest proof you can give on the spot.",
+  hindi:"यह पुट्टी सिलिकॉन से बनी है, जिससे पानी दीवार पर बूंद बनकर लुढ़क जाता है और अंदर नहीं जाता (लोटस बीड इफेक्ट)। यह सीलन और नमी से दीवार को बचाती है।"},
+happy_wall_putty:{cat:"Wall Putty",name:"Happy Wall Putty (Touch-Up)",type:"compare",
+  usp:"Butter-like consistency touch-up putty with extra smooth finish - ideal undercoat for repainting jobs.",
+  pills:["Butter-like Consistency","Extra Smooth Finish","Ideal for Repainting"],
+  ourCol:"Happy Wall Putty", competitors:["Asian Acrylic Wall Putty","Nerolac Acrylic Wall Putty"],
+  rows:[R("Coverage","10-15 sqft/2Coat/Kg",false,["12-15 sqft/2Coat/Kg","10-13 sqft/2Coat/Kg"]),
+        R("Dilution","Nil",false,["Nil","Nil"]),
+        R("Finish","Smooth Matt",false,["Smooth Matt","Matt"]),
+        R("Unique Advantage","Alkali Resistant, Acrylic",false,["Alkali Resistant, Breathable","Acrylic Putty"]),
+        PR("₹95-120/Kg",["₹100-125/Kg","₹90-115/Kg"])],
+  hindi:"हैप्पी वॉल पुट्टी छोटी टच-अप और रीपेंटिंग के काम के लिए एकदम सही है। इसका फिनिश मक्खन जैसा चिकना होता है।"},
+silk_acrylic_putty:{cat:"Wall Putty",name:"Silk Acrylic Putty (Interior)",type:"info",
+  usp:"Alkali-resistant acrylic putty with a butter-like consistency and sparkling whiteness for interior surfaces.",
+  pills:["Alkali Resistant Acrylic Polymer","Butter-like Consistency","Sparkling Whiteness","Excellent Filling & Levelling"],
+  tds:[["Coverage","10-12 sqft/2Coat/Kg"],["Dilution","NA"],["Drying Time","45-60 Min SD / 4-6 Hrs HD"],["Pack Size","40 Kg"],["Pot Life","3 Hrs (Mixed)"],["Indicative Price*","₹110-135/Kg"]],
+  note:"Direct competitor benchmarking for this SKU wasn't in the reference deck - use TDS above for field reference.",
+  hindi:"सिल्क एक्रिलिक पुट्टी इंटीरियर दीवारों के लिए है। यह मक्खन जैसी चिकनी होती है और बहुत अच्छी सफेदी देती है।"},
+
+/* ===== PRIMERS - WATER THINNABLE ===== */
+bp_cement_primer:{cat:"Primers",name:"BP Cement Primer (Interior)",type:"compare",
+  usp:"100% acrylic economy interior primer with superior whiteness, resistance to chalking and better top-coat coverage.",
+  pills:["100% Acrylic","High Opacity","Green Pro - Low Smell"],
+  ourCol:"BP Cement Primer", competitors:["Asian Decoprime","Nerolac Cement Primer","Dulux Cement Primer"],
+  rows:[R("Nature","100% Acrylic",true,["Acrylic","Acrylic","Less Acrylic content"]),
+        R("Coverage","80-100 sqft",false,["100-120 sqft","120-130 sqft","100-120 sqft"]),
+        R("Whiteness","High",true,["Good","Average","Average"]),
+        R("Unique Advantage","Green Pro - Low Smell",true,["Fortified with Fungicides","-","-"]),
+        PR("₹95-120/Ltr",["₹100-130/Ltr","₹90-115/Ltr","₹100-125/Ltr"])],
+  hindi:"बीपी सीमेंट प्राइमर 100% एक्रिलिक है, जो इंटीरियर दीवार को टॉप कोट के लिए तैयार करता है। यह किफायती और असरदार है।"},
+seal_o_prime:{cat:"Primers",name:"HomeShield Seal-O-Prime",type:"compare",
+  usp:"5-year warranty damp-resistant undercoat with excellent whiteness and high opacity.",
+  pills:["5 Year Warranty","Damp Prevention","High Opacity","High Coverage"],
+  ourCol:"Seal-O-Prime", competitors:["Asian Primero"],
+  rows:[R("Dilution","100%",false,["100%"]), R("Coverage","110-120 Sqft",false,["100-120 Sqft"]),
+        R("Opacity","High",false,["High"]), R("Finish","Matt",false,["Matt"]),
+        R("Unique Advantage","Green pro certified",true,["-"]),
+        PR("₹135-160/Ltr",["₹140-170/Ltr"])],
+  firstMover:"Seal-O-Prime was the first primer in India to have 3 boosters in one can: (1) Silicon - gives waterproofing power, (2) Titanium Dioxide - gives superior whiteness, (3) Penetrative Polymers - seal small pores in the wall and stabilise the surface, giving better top-coat coverage.",
+  hindi:"सील-ओ-प्राइम में 3 खासियत हैं - सिलिकॉन (पानी से बचाव), टाइटेनियम डाइऑक्साइड (सफेदी), और पेनेट्रेटिव पॉलीमर (सतह को मज़बूत बनाना)। यह तकनीक भारत में सबसे पहले बर्जर लाया।"},
+dampstop_duo:{cat:"Primers",name:"HomeShield Dampstop Duo",type:"compare",
+  usp:"Nano-technology waterproofing primer offering 7-year exterior/2-year interior warranty with salt-safe performance.",
+  pills:["7 Yr Ext / 2 Yr Int Warranty","Salt Safe","Nano Technology","Cost Saving"],
+  ourCol:"Dampstop Duo", competitors:["Asian Damp Sheath"],
+  rows:[R("Dilution","100%",true,["30%"]), R("Coverage","100-110 sqft",true,["50 sqft"]),
+        R("Opacity","Better",true,["Normal"]), R("Finish","Smooth",false,["Matt - Regular"]),
+        R("Water Resistance","2 Bar -ve / 4 Bar +ve",true,["Decent"]),
+        PR("₹190-230/Ltr",["₹200-240/Ltr"])],
+  hindi:"डैम्पस्टॉप ड्यूओ सीलन रोकने वाला प्राइमर है। यह नैनो तकनीक से बना है और नमक व पानी से भी दीवार को सुरक्षित रखता है।"},
+weathercoat_ext_primer:{cat:"Primers",name:"WeatherCoat Exterior Primer (Alkali Guard)",type:"compare",
+  usp:"Superior whiteness with excellent opacity, alkali-resistant and anti-efflorescent, Green Pro certified.",
+  pills:["Alkali Resistant","Anti Efflorescent","Green Pro Certified","Better Top Coat Coverage"],
+  ourCol:"WeatherCoat Exterior Primer", competitors:["Asian Trucare Exterior Primer","Nerolac Exterior Primer","Dulux Acrylic Exterior Primer"],
+  rows:[R("Dilution","100%",false,["100%","100%","100%"]),
+        R("Coverage","110-120 Sqft",false,["100-120 Sqft**","90-100 Sqft","125-150 Sqft**"]),
+        R("Opacity","High",false,["High","Good","Good"]),
+        R("Finish","Matt",false,["Matt","Matt","Matt / Soft Sheen"]),
+        R("Unique Advantage","Green pro certified",true,["-","Water repellent","-"]),
+        PR("₹150-180/Ltr",["₹155-185/Ltr","₹135-165/Ltr","₹150-180/Ltr"])],
+  hindi:"वेदरकोट एक्सटीरियर प्राइमर बाहरी दीवार को क्षार (अल्कली) और सीलन से बचाता है, और टॉप कोट को बेहतर कवरेज देता है।"},
+bp_exterior_cement_primer:{cat:"Primers",name:"BP Exterior Cement Primer",type:"compare",
+  usp:"Special-grade acrylic binder and pigments give extra whiteness, reduced porosity/efflorescence and a water-resistant film.",
+  pills:["Water-Resistant Film","Reduces Porosity","Resistance to Chalking"],
+  ourCol:"BP Exterior Primer", competitors:["Asian Trucare Exterior Primer","Nerolac Exterior Primer","Dulux Acrylic Exterior Primer"],
+  rows:[R("Coverage","90-100 Sqft",false,["100-120 Sqft**","130-150 Sqft**","110-130 Sqft"]),
+        R("Opacity","High",false,["High","Good","Superior"]),
+        R("Unique Advantage","Green pro certified",true,["-","-","-"]),
+        PR("₹100-125/Ltr",["₹105-135/Ltr","₹95-120/Ltr","₹105-130/Ltr"])],
+  hindi:"बीपी एक्सटीरियर सीमेंट प्राइमर बाहरी दीवार में पानी नहीं जाने देता और सफेदी को बढ़ाता है।"},
+walmasta_primer:{cat:"Primers",name:"Walmasta Primer (Economy 2-in-1)",type:"info",
+  usp:"Economical 2-in-1 exterior + interior primer, Green Pro certified with high opacity and coverage.",
+  pills:["Economy 2-in-1 Primer","High Opacity","Resistant to Chalking","Green Pro Certified"],
+  tds:[["Surface","Masonry, Asbestos"],["Solvent","Water"],["Dilution","1:1 (100%)"],["Coverage","80-90 sqft"],["Drying Time","6-8 Hrs (HD)"],["Indicative Price*","₹90-115/Ltr"]],
+  hindi:"वालमास्टा प्राइमर एक किफायती 2-इन-1 प्राइमर है, जो अंदर और बाहर दोनों दीवारों पर लगाया जा सकता है।"},
+power_grip:{cat:"Primers",name:"WeatherCoat Power Grip",type:"info",
+  usp:"3-year warranty affordable damp-resistant primer for interior & exterior use.",
+  pills:["3 Years Warranty","Affordable Damp Resistant","Resistant to Chalking","High Coverage"],
+  tds:[["Surface","Masonry, Asbestos"],["Coverage","100-110 sqft"],["Finish","Matt"],["Indicative Price*","₹140-165/Ltr"]],
+  hindi:"वेदरकोट पावर ग्रिप एक किफायती नमी-रोधी प्राइमर है, जिसमें 3 साल की वारंटी मिलती है।"},
+damp_shield_primer:{cat:"Primers",name:"HomeShield Damp Shield Primer",type:"info",
+  usp:"Affordable exterior damp-blocking primer with 3-year warranty and resistance to chalking.",
+  pills:["3 Years Warranty","Ext Damp Blocking Primer","Resistant to Chalking","High Coverage"],
+  tds:[["Surface","Masonry, Asbestos"],["Coverage","110-120 sqft"],["Finish","Matt"],["Indicative Price*","₹150-180/Ltr"]],
+  hindi:"डैम्प शील्ड प्राइमर बाहरी दीवार की सीलन रोकने के लिए किफायती विकल्प है।"},
+
+/* ===== PRIMERS - METAL ===== */
+red_oxide_primer:{cat:"Metal Primers",name:"Red Oxide Primer",type:"compare",
+  usp:"Economic alkyd-based primer suitable for mild steel surfaces with excellent opacity and tough DFT.",
+  pills:["Excellent Opacity","Tough DFT","Easy Brushability","Green Pro Certified"],
+  ourCol:"Red Oxide Primer", competitors:["Asian Trucare Red Oxide","Nerolac Goody Red Oxide","Dulux Red Oxide Metal"],
+  rows:[R("Dilution","5% MTO",false,["5% MTO","30% GP Thinner","10% Dulux Thinner"]),
+        R("Coverage","100-120 Sqft",false,["160-180 Sqft","130-150 Sqft","95-100 Sqft"]),
+        R("Unique Advantage","Green pro certified",true,["Lead Free","-","-"]),
+        PR("₹170-200/Ltr",["₹175-205/Ltr","₹150-180/Ltr","₹180-210/Ltr"])],
+  hindi:"रेड ऑक्साइड प्राइमर लोहे की सतह के लिए है। यह जंग से बचाता है और पेंट को अच्छी पकड़ देता है।"},
+zinc_yellow_primer:{cat:"Metal Primers",name:"BP Zinc Yellow Primer",type:"compare",
+  usp:"Formulated with zinc pigments - ideal primer for saline water and heavily corrosive conditions.",
+  pills:["Zinc Pigments","Saline/Corrosive Protection","Free from Heavy Metals","Green Pro Certified"],
+  ourCol:"BP Zinc Yellow Primer", competitors:["Asian Smartcare Yellow Metal Primer","Nerolac Goody Yellow Primer","Dulux Zinc Yellow Primer"],
+  rows:[R("Dilution","5% MTO",false,["6-8% MTO","10% GP Thinner","10% MTO"]),
+        R("Coverage","100-120 Sqft",false,["90-100 Sqft","130-150 Sqft","90-100 Sqft"]),
+        R("Unique Advantage","Green pro certified",true,["Lead Free","-","-"]),
+        PR("₹190-220/Ltr",["₹195-225/Ltr","₹170-200/Ltr","₹200-230/Ltr"])],
+  hindi:"जिंक येलो प्राइमर खारे पानी और ज़्यादा जंग वाली जगहों के लिए खास बनाया गया है।"},
+butterfly_metal_primer:{cat:"Metal Primers",name:"Butterfly A/C Metal Primer (Red Oxide)",type:"info",
+  usp:"Quick-drying premium red oxide primer best suited for mild steel surfaces with better top-coat coverage.",
+  pills:["Quick Drying","Better Top Coat Coverage","Free from Heavy Metals","Green Pro Certified"],
+  tds:[["Solvent","Thinner 800"],["Dilution","15-20%"],["Coverage","120-150 sqft"],["Drying Time","14-16 Hrs (HD)"],["Indicative Price*","₹185-215/Ltr"]],
+  hindi:"बटरफ्लाई मेटल प्राइमर जल्दी सूखने वाला रेड ऑक्साइड प्राइमर है, जो लोहे की सतह के लिए बेहतरीन है।"},
+luxol_qd_1k_epoxy:{cat:"Metal Primers",name:"Luxol QD 1K Epoxy Primer",type:"compare",
+  usp:"Superior to red oxide/zinc yellow primer - heavy duty anti-corrosive epoxy primer for MS/Wood/Concrete, interior & exterior.",
+  pills:["Heavy-Duty Anti Corrosive","Interior & Exterior","Overcoat with Enamel/Epoxy","Green Pro Certified"],
+  ourCol:"Luxol QD 1K Epoxy", competitors:["Trucare Grey Metal Primer","Nerolac 1K Zinc Rich Epoxy","Dulux QD Primer"],
+  rows:[R("Coverage","100-120 Sqft",false,["100 Sqft","80-100 Sqft","100-110 Sqft"]),
+        R("Finish","High Sheen",false,["High Sheen Satin","Matt","Matt"]),
+        R("Unique Advantage","Green pro certified",true,["Lead Free","-","-"]),
+        PR("₹280-330/Ltr",["₹270-320/Ltr","₹300-350/Ltr","₹290-340/Ltr"])],
+  hindi:"लक्सोल क्यूडी 1के इपॉक्सी प्राइमर लोहा, लकड़ी और कंक्रीट तीनों पर काम करता है और जंग से मज़बूत सुरक्षा देता है।"},
+
+/* ===== INTERIOR EMULSION - ECONOMY ===== */
+bison_acrylic_emulsion:{cat:"Interior Emulsion (Economy)",name:"Bison Acrylic Emulsion",type:"compare",
+  usp:"Special copolymers give anti-fading protection at an economy price - the widest shade range in this bucket (10,000+ shades).",
+  pills:["Spl Copolymers","Anti Fading","Low VOC, Green Pro Certified"],
+  ourCol:"Bison Acrylic Emulsion", competitors:["Asian Tractor Emulsion","Nerolac Beauty Smooth","Dulux Promise","OPUS Style Colour Smart"],
+  rows:[R("Coverage","120-140 sqft",false,["130-150 sqft","95-110 sqft","90-100 sqft","120-140 sqft"]),
+        R("Finish","Rich Matt",false,["Matt & Soft Sheen","Matt","Matt","Matt"]),
+        R("No. of Shades","10,000+",true,["1600+","1400+","3000+","2200+"]),
+        R("Unique Advantage","Low VOC, Green Pro, Value for money, anti fading & anti fungal",true,["Low VOC","Low VOC","Low VOC","Anti Fungal"]),
+        PR("₹140-180/Ltr",["₹120-165/Ltr","₹110-150/Ltr","₹150-190/Ltr","₹130-170/Ltr"])],
+  hindi:"बाइसन एक्रिलिक इमल्शन डिस्टेंपर जैसी कीमत में एक्रिलिक पेंट का फायदा देता है। इसमें रंग जल्दी फीका नहीं पड़ता और 10,000+ शेड्स मिलते हैं।"},
+bison_lite:{cat:"Interior Emulsion (Economy)",name:"Bison Lite",type:"compare",
+  usp:"Better hiding than local emulsion at an entry price point, with 1000+ shades and Green Pro certification.",
+  pills:["Better Hiding than Local Emulsion","Low VOC, Green Pro Certified"],
+  ourCol:"Bison Lite", competitors:["Asian Tractor Sparc","OPUS Style Colour Fresh"],
+  rows:[R("Coverage","80-90 sqft",false,["120-140 sqft","100-120 sqft"]),
+        R("Finish","Matt",false,["Matt","Matt"]),
+        R("No. of Shades","1000+",true,["850+","1600+"]),
+        R("Unique Advantage","Low VOC, Green pro certified",true,["-","Low Odor"]),
+        PR("₹110-140/Ltr",["₹100-135/Ltr","₹115-150/Ltr"])],
+  hindi:"बाइसन लाइट सबसे किफायती इंटीरियर इमल्शन है, जो लोकल पेंट से बेहतर फिनिश देता है।"},
+bison_glow:{cat:"Interior Emulsion (Economy)",name:"Bison Glow",type:"compare",
+  usp:"4-year performance warranty soft-sheen emulsion with 2000+ shades, Low VOC and Green Pro certified.",
+  pills:["4 Yr Performance Warranty","Low VOC, Green Pro Certified"],
+  ourCol:"Bison Glow", competitors:["Asian Tractor Shyne","Nerolac Beauty Sheen","OPUS Style Color Smart"],
+  rows:[R("Coverage","130-150 sqft",false,["130-150 sqft","100-120 sqft","120-140 sqft"]),
+        R("Warranty","4 Yrs performance warranty",false,["3 Yrs performance warranty","-","4 Yrs"]),
+        R("Finish","Soft Sheen",false,["Soft Matt","Soft Sheen","Shine"]),
+        R("No. of Shades","2000+",false,["1200+","1000+","2200+"]),
+        R("Unique Advantage","Low VOC, Green pro certified",true,["-","-","Anti fungal"]),
+        PR("₹160-195/Ltr",["₹150-190/Ltr","₹140-175/Ltr","₹165-200/Ltr"])],
+  hindi:"बाइसन ग्लो सॉफ्ट शीन फिनिश वाला इमल्शन है, जिसमें 4 साल की वारंटी मिलती है।"},
+
+/* ===== INTERIOR EMULSION - PREMIUM / SUPER PREMIUM ===== */
+easy_clean:{cat:"Interior Emulsion (Premium)",name:"Berger Easy Clean",type:"compare",
+  usp:"Powered with cross-linking polymers and fine pigments for a premium rich, elegant finish. Conforms to ISI/IGBC/GRIHA specs. 7-year warranty.",
+  pills:["Cross Linking Polymers","7 Years Warranty","ISI/IGBC/GRIHA Conforming","Low VOC, Green Pro"],
+  ourCol:"Easy Clean", competitors:["Asian Apcolite All Protek","Nerolac Pearls","Dulux Superclean 3 in 1","OPUS Calista Ever Clear"],
+  rows:[R("Coverage","120-130 sqft",false,["140-160 sqft","110-120 sqft","110-130 sqft","120-140 sqft"]),
+        R("Finish","Soft Sheen",false,["Rich Matt","Soft Sheen","Mild Sheen","Soft Sheen"]),
+        R("No. of Shades","2000+",false,["1700+","1450+","2000+","2100+"]),
+        R("Unique Advantage","Low VOC, Green pro certified",true,["Low VOC","Low VOC","Low VOC","-"]),
+        PR("₹290-340/Ltr",["₹300-350/Ltr","₹260-310/Ltr","₹300-340/Ltr","₹280-320/Ltr"])],
+  firstMover:"Berger Easy Clean was India's first stain-resistant paint with Stay-Clean Technology. Everyday stains simply don't stick to the wall. Other brands brought out similar 'stain-resistant' paints only after Berger's success with Easy Clean.",
+  hindi:"ईज़ी क्लीन पेंट पर दाग नहीं टिकता (स्टे-क्लीन तकनीक)। यह तकनीक भारत में सबसे पहले बर्जर लाया था। इसमें 7 साल की वारंटी मिलती है।"},
+easy_clean_fresh:{cat:"Interior Emulsion (Premium)",name:"Easy Clean Fresh",type:"compare",
+  usp:"Pleasant smell that reduces odour, powered with cross-linking polymers, premium rich finish. 7-year warranty.",
+  pills:["Reduces Odour","7 Years Warranty","Low VOC, Green Pro Certified"],
+  ourCol:"Easy Clean Fresh", competitors:["Asian Royal Atmos","Nerolac Impression Ultra Fresh"],
+  rows:[R("Coverage","130-140 sqft",false,["140-160 sqft**","110-120 sqft"]),
+        R("Finish","Soft Sheen",false,["Smooth Matt Finish","Sheen"]),
+        R("No. of Shades","2000+",true,["1750+","1450+"]),
+        R("Unique Advantage","Low VOC, Green pro certified",true,["Purifies Air, Activated Carbon Tech","Anti Bacterial & Fungal Resistance"]),
+        PR("₹300-345/Ltr",["₹320-370/Ltr","₹270-315/Ltr"])],
+  firstMover:"Easy Clean Fresh carries forward Berger's original Stay-Clean Technology (India's first stain-resistant paint) and adds a pleasant, odour-reducing smell on top.",
+  hindi:"ईज़ी क्लीन फ्रेश में अच्छी खुशबू आती है और बदबू कम करता है। इसमें भी बर्जर की स्टे-क्लीन तकनीक है, जिस पर दाग नहीं टिकता।"},
+kolor_plus_glow:{cat:"Interior Emulsion (Premium)",name:"Kolor Plus Glow",type:"info",
+  usp:"Colour Guard Technology available in both Smooth Matt & Glow finish, with superior colour retention.",
+  pills:["Colour Guard Technology","6 Years Warranty","Anti Fading & Anti Fungal","Green Pro Certified"],
+  tds:[["Coverage","130-140 sqft"],["Dilution","50%"],["Finish","Soft Sheen"],["Durability","6 Years"],["Indicative Price*","₹250-290/Ltr"]],
+  hindi:"कलर प्लस ग्लो में कलर गार्ड तकनीक है, जो रंग को लंबे समय तक चमकदार रखती है। इसमें 6 साल की वारंटी मिलती है।"},
+easy_clean_silky_touch:{cat:"Interior Emulsion (Premium)",name:"Easy Clean Silky Touch",type:"info",
+  usp:"Silky-smooth finish with No-Crack Technology and superior washability. 8-year warranty - highest in the premium range.",
+  pills:["Silky Smooth Finish","No-Crack Technology","8 Years Warranty","Anti Bacterial/Anti Fungal"],
+  tds:[["Coverage","120-130 sqft"],["Dilution","40%"],["Finish","Silky Smooth"],["Durability","8 Years"],["Indicative Price*","₹330-375/Ltr"]],
+  firstMover:"Easy Clean Silky Touch also carries Berger's original Stay-Clean Technology - stains don't stick - along with a silky-smooth, no-crack finish and the longest warranty (8 years) in the premium range.",
+  hindi:"ईज़ी क्लीन सिल्की टच सबसे मुलायम फिनिश देता है और इसमें सबसे लंबी 8 साल की वारंटी मिलती है।"},
+
+/* ===== INTERIOR EMULSION - LUXURY / SUPER LUXURY (Silk Glamor) ===== */
+silk_glamor_soft_sheen:{cat:"Interior Emulsion (Luxury)",name:"Silk Glamor (Soft Sheen)",type:"compare",
+  usp:"Premium aesthetics with a soft touch like silk - best-in-class coverage in the luxury emulsion bucket. 9-year durability.",
+  pills:["Premium Aesthetics","Soft Touch like Silk","9 Years Durability","Low VOC, Green Pro"],
+  ourCol:"Silk Glamor", competitors:["Asian Royale","Nerolac Impressions 24 Carat","Dulux Velvet Touch","OPUS One Pure Elegance"],
+  rows:[R("Coverage","150-170 sqft",true,["140-160 sqft","110-120 sqft",">149 sqft","140-160 sqft"]),
+        R("Finish","Soft Sheen",false,["Sheen","Sheen","Sheen","Elegant Sheen"]),
+        R("No. of Shades","2000+",false,["1750+","1400+","3000+","2300+"]),
+        R("Unique Advantage","Low VOC, Green pro certified",true,["Low VOC","Low VOC","Low VOC","Low VOC"]),
+        PR("₹420-470/Ltr",["₹420-460/Ltr","₹350-395/Ltr","₹450-500/Ltr","₹400-445/Ltr"])],
+  hindi:"सिल्क ग्लैमर सॉफ्ट शीन रेशम जैसा मुलायम अहसास देता है। इसकी कवरेज इस सेगमेंट में सबसे अच्छी है।"},
+silk_glamor_rich_matt:{cat:"Interior Emulsion (Luxury)",name:"Silk Glamor (Luxury Matt)",type:"compare",
+  usp:"Rich matt luxury finish leading coverage (150-170 sqft) against Asian & OPUS matt equivalents.",
+  pills:["Premium Aesthetics","9 Years Durability","Low VOC, Green Pro"],
+  ourCol:"Silk Glamor Luxury Matt", competitors:["Asian Royale Matt","OPUS Pure Elegance"],
+  rows:[R("Coverage","150-170 sqft",true,["140-160 sqft","140-160 sqft"]),
+        R("Finish","Luxury Matt",false,["Rich Matt","Rich Matt"]),
+        R("No. of Shades","2000+",false,["1750+","2150+"]),
+        R("Unique Advantage","Low VOC, Green pro certified",true,["Low VOC","Low VOC"]),
+        PR("₹415-460/Ltr",["₹410-455/Ltr","₹395-440/Ltr"])],
+  hindi:"सिल्क ग्लैमर रिच मैट लग्ज़री मैट फिनिश देता है, जो एशियन और ओपस से बेहतर कवरेज देता है।"},
+silk_glamor_high_sheen:{cat:"Interior Emulsion (Luxury)",name:"Silk Glamor (Luxury High Sheen)",type:"compare",
+  usp:"Crystal Reflective Technology, elastomeric with no cracks - leading coverage in the luxury high-sheen segment.",
+  pills:["Crystal Reflective Technology","Elastomeric - No Cracks","Low VOC, Green Pro"],
+  ourCol:"Silk Glamor High Sheen", competitors:["Asian Royale Shyne","Nerolac Impressions Eco Clean","Dulux Velvet Touch Diamond Glow","OPUS Pure Elegance Shine"],
+  rows:[R("Coverage","150-170 sqft",true,["140-150 sqft","110-120 sqft","90-100 sqft","140-160 sqft"]),
+        R("Finish","Luxury High Sheen",false,["Soft Sheen","High Sheen","High Sheen","High Shine"]),
+        R("Unique Advantage","Low VOC, Green pro certified",true,["Low VOC","Low VOC","Low VOC","Low VOC"]),
+        PR("₹430-480/Ltr",["₹425-470/Ltr","₹360-410/Ltr","₹460-510/Ltr","₹410-455/Ltr"])],
+  hindi:"सिल्क ग्लैमर हाई शीन में क्रिस्टल रिफ्लेक्टिव तकनीक है, जिससे दीवार में दरार नहीं आती।"},
+silk_glamor_dazzle:{cat:"Interior Emulsion (Luxury)",name:"Silk Glamor Dazzle",type:"info",
+  usp:"Super luxury rich & shiny look with best-in-class smoothness and the longest durability in the interior range - 11 years.",
+  pills:["Super Hi Sheen Finish","Best-in-Class Smoothness","11 Years Durability","Excellent Washability"],
+  tds:[["Coverage","140-160 sqft"],["Dilution","30-35%"],["Finish","Super Sheen"],["Durability","11 Years"],["Indicative Price*","₹460-510/Ltr"]],
+  hindi:"सिल्क ग्लैमर डैज़ल सबसे ज़्यादा चमक देता है और 11 साल तक टिकता है - बर्जर की इंटीरियर रेंज में सबसे लंबी वारंटी।"},
+
+/* ===== EXTERIOR EMULSION - ECONOMY (Walmasta) ===== */
+walmasta_lite:{cat:"Exterior Emulsion (Economy)",name:"Walmasta Lite",type:"compare",
+  usp:"Most affordable exterior emulsion in the Berger range - anti-algal, anti-fungal, resistant to chalking & fading.",
+  pills:["Most Affordable Exterior Emulsion","Anti Algal & Anti Fungal","2 Years Warranty"],
+  ourCol:"Walmasta Lite", competitors:["Asian Ace Sparc","Birla Opus Style Power Fit"],
+  rows:[R("Coverage","50-60 sqft",false,["55-65 sqft","55-60 sqft"]),
+        R("No. of Shades","2000+",true,["1000+","1000+"]),
+        R("Unique Advantage","Low VOC, Green Pro Certified",true,["Lead Free","Anti Chalking"]),
+        PR("₹150-185/Ltr",["₹160-195/Ltr","₹150-185/Ltr"])],
+  hindi:"वालमास्टा लाइट सबसे सस्ता एक्सटीरियर इमल्शन है, जो फफूंद और काई से भी बचाता है।"},
+walmasta_emulsion:{cat:"Exterior Emulsion (Economy)",name:"Walmasta (Antifungal Emulsion)",type:"compare",
+  usp:"Excellent smooth matt finish - protection against algal & fungal growth, resistant to chalking & fading. 4-year warranty.",
+  pills:["Antifungal & Antialgal","4 Years Warranty","Green Pro Certified"],
+  ourCol:"Walmasta Emulsion", competitors:["Asian Ace Emulsion","Nerolac Suraksha","Dulux Promise","Birla Opus Style Power Bright"],
+  rows:[R("Coverage","50-55 sqft",false,["50-60 sqft","40-50 sqft","50-60 sqft","55-60 sqft"]),
+        R("Finish","Smooth Matt",false,["Matt","Matt","Matt","Matt"]),
+        R("No. of Shades","2000+",false,["1800+","1200+","1500+","2000+"]),
+        R("Unique Advantage","Low VOC, Green Pro Certified",true,["Lead Free","-","-","-"]),
+        PR("₹165-200/Ltr",["₹170-205/Ltr","₹150-185/Ltr","₹170-205/Ltr","₹160-195/Ltr"])],
+  hindi:"वालमास्टा इमल्शन बाहरी दीवार को फफूंद और काई से बचाता है, 4 साल की वारंटी के साथ।"},
+walmasta_glow:{cat:"Exterior Emulsion (Economy)",name:"Walmasta Glow",type:"compare",
+  usp:"Excellent soft-sheen finish, anti-algal/anti-fungal, more durable acrylic emulsion. 4-year warranty.",
+  pills:["Excellent Soft Sheen Finish","More Durable - Acrylic","4 Years Warranty"],
+  ourCol:"Walmasta Glow", competitors:["Asian Ace Shyne","Birla Opus Style Power Bright Shine"],
+  rows:[R("Coverage","50-60 sqft",false,["50-60 sqft","55-60 sqft"]),
+        R("Finish","Super Sheen",false,["Sheen","Sheen"]),
+        R("No. of Shades","2000+",true,["1400+","1600+"]),
+        R("Unique Advantage","Low VOC, Green Pro Certified",true,["Lead Free","-"]),
+        PR("₹175-210/Ltr",["₹180-215/Ltr","₹170-205/Ltr"])],
+  hindi:"वालमास्टा ग्लो सॉफ्ट शीन फिनिश देता है और ज़्यादा टिकाऊ है।"},
+
+/* ===== EXTERIOR EMULSION - PREMIUM / SUPER PREMIUM ===== */
+weathercoat_glow:{cat:"Exterior Emulsion (Premium)",name:"WeatherCoat Glow",type:"compare",
+  usp:"Dirt-repellent, stay-clean formula with rich sheen finish and all-weather protection. 7-year warranty.",
+  pills:["Dirt Repellent Properties","Stay-Clean Formula","7 Years Warranty","Anti Algal & Anti Fungal"],
+  ourCol:"WeatherCoat Glow", competitors:["Asian Apex Dust Proof","Nerolac Suraksha+","Dulux Weathershield Protect","Birla Opus Calista Neo Star Shine"],
+  rows:[R("Coverage","55-60 sqft",false,["50-60 sqft","50-60 sqft","50-60 sqft","50-60 sqft"]),
+        R("Finish","High Sheen",false,["High Sheen","Matt","Mild Sheen","Rich Sheen"]),
+        R("No. of Shades","2000+",true,["1700+","1300+","1500+","1600+"]),
+        R("Unique Advantage","Green Pro Certified",true,["Lead Free, Low VOC","-","-","Dust Pick Up Resistant, Anti Algae Growth"]),
+        PR("₹300-350/Ltr",["₹320-370/Ltr","₹280-330/Ltr","₹310-360/Ltr","₹290-340/Ltr"])],
+  sourceNote:"Berger's official product page for WeatherCoat Glow Advanced confirms 100% acrylic formulation with a \"stay-clean\" technology that washes off dust with rain and prevents algal/fungal growth. (bergerpaints.com/products/exterior-wall-coatings/weathercoat-glow-advanced)",
+  hindi:"वेदरकोट ग्लो में स्टे-क्लीन फॉर्मूला है, जिससे बारिश के साथ धूल अपने आप धुल जाती है।"},
+weathercoat_anti_dust:{cat:"Exterior Emulsion (Premium)",name:"WeatherCoat Anti Dust",type:"compare",
+  usp:"Best-in-class anti-dust paint with unique Dust Guard technology - no competitor in this set offers true dust resistance. 8-year warranty.",
+  pills:["Unique Dust Guard Technology","8 Years Warranty","Anti Algal & Anti Fungal","Complete Weather Protection"],
+  ourCol:"WeatherCoat Anti Dust", competitors:["Asian Apex Advanced Dust Proof","Nerolac Suraksha - Dust Resist","Birla Opus Calista Neo Star"],
+  rows:[R("Coverage","60-65 sqft",false,["50-60 sqft*","50-60 sqft","50-60 sqft"]),
+        R("Finish","Rich Soft Sheen",false,["Soft Sheen","Soft Sheen","Soft Sheen"]),
+        R("No. of Shades","2000+",true,["1700+","As per fandeck*","2100+"]),
+        R("Unique Advantage","Unique Dust Guard Tech, Anti Algal & Anti Fungal, Green Pro Certified",true,["Dust Proof Technology, Lead Free","Low Dust Pick Up - Not Dust Proof","Dust Pick Up Resistance, Algae Growth, Low VOC"]),
+        PR("₹310-360/Ltr",["₹330-380/Ltr","₹290-340/Ltr","₹300-350/Ltr"])],
+  firstMover:"Berger WeatherCoat Anti Dust was the first exterior paint in India built specially to fight dust on outer walls. Its own Dust Guard Technology gives the lowest dust pick-up in this comparison. Other brands launched 'dust-proof' variants only after Berger.",
+  sourceNote:"Berger's official product page confirms WeatherCoat Anti Dustt uses a proprietary \"Dust Guard\" technology that keeps dust from settling on exterior walls, backed by an 8-year performance warranty and Green Pro certification. (bergerpaints.com/products/exterior-wall-coatings/weathercoat-anti-dustt)",
+  hindi:"वेदरकोट एंटी डस्ट भारत में सबसे पहले बर्जर लाया था। इसकी खास डस्ट गार्ड तकनीक से दीवार पर धूल सबसे कम जमती है।"},
+weathercoat_anti_dust_kool:{cat:"Exterior Emulsion (Premium)",name:"WeatherCoat Anti Dust Kool",type:"info",
+  usp:"Heat-reflective nano-tech combined with dust guard technology - keeps interiors cooler while repelling dust. 8-year warranty.",
+  pills:["Heat Reflective Nano Tech","Dust Guard Technology","8 Years Warranty","Anti Algal & Anti Fungal"],
+  tds:[["Coverage","60-65 sqft"],["Dilution","40%"],["Finish","Rich Soft Sheen"],["Warranty","8 Years"],["Indicative Price*","₹330-380/Ltr"]],
+  firstMover:"Anti Dust Kool takes Berger's original Dust Guard Technology and adds Heat Reflective Nano-Tech on top - another Berger-first for Indian exterior walls. It keeps dust off the wall AND keeps the inside of the house cooler.",
+  sourceNote:"Berger's official page for Anti Dustt Kool confirms it is India's most popular dust-repellent paint now enhanced with heat-reflective nano-tech for a cooling effect, backed by an 8-year performance warranty. (bergerpaints.com/products/exterior-wall-coatings/weathercoat-anti-dustt-kool)",
+  hindi:"वेदरकोट एंटी डस्ट कूल धूल भी रोकता है और घर को अंदर से ठंडा भी रखता है - यह तकनीक भी बर्जर ने सबसे पहले भारत में लाई।"},
+
+/* ===== EXTERIOR EMULSION - LUXURY / SUPER LUXURY (Long Life) ===== */
+long_life_flexo:{cat:"Exterior Emulsion (Luxury)",name:"WeatherCoat Long Life Flexo",type:"compare",
+  usp:"Silicon protection with elastomeric film that covers hairline cracks and superior dust pick-up resistance. 10-year warranty.",
+  pills:["Silicon Protection","Covers Hairline Cracks","10 Years Warranty","Green Pro Certified"],
+  ourCol:"Long Life Flexo", competitors:["Asian Apex Ultima","Birla Opus One True Look"],
+  rows:[R("Coverage","70-75 Sqft",true,["55-65 Sqft","50-60 Sqft"]),
+        R("Finish","High Sheen",false,["Rich Sheen","High Sheen"]),
+        R("No. of Shades","2000+",false,["2100+","2100+"]),
+        R("Unique Advantage","Green Pro Certified",false,["Low VOC","Low VOC"]),
+        PR("₹420-470/Ltr",["₹440-495/Ltr","₹400-450/Ltr"])],
+  hindi:"लॉन्ग लाइफ फ्लेक्सो में सिलिकॉन प्रोटेक्शन है, जो बालों जैसी बारीक दरारों को भी ढक देता है।"},
+long_life_10:{cat:"Exterior Emulsion (Luxury)",name:"WeatherCoat Long Life 10",type:"compare",
+  usp:"Most innovative exterior paint tech - PU + Nano Silicon with true shades that never fade. 12-year warranty.",
+  pills:["PU + Nano Silicon","True Shades Never Fade","12 Years Warranty","Green Pro Certified"],
+  ourCol:"Long Life 10", competitors:["Asian Apex Ultima Protek","Nerolac Excel Top Guard","Dulux Weathershield Powerflexx","Birla Opus One True Life"],
+  rows:[R("Coverage","60-70 sqft",false,["55-65 sqft","46-50 sqft","46-60 sqft","50-60 sqft"]),
+        R("Finish","High Sheen",false,["High Sheen","High Sheen","Mid Sheen","High Sheen"]),
+        R("No. of Shades","2000+",true,["1700+","1450+","1500+","2000+"]),
+        R("Unique Advantage","Green Pro Certified",true,["-","7 Bar Film Thickness","Low Odor & VOC","Low VOC"]),
+        PR("₹440-495/Ltr",["₹460-520/Ltr","₹390-435/Ltr","₹430-475/Ltr","₹410-455/Ltr"])],
+  hindi:"लॉन्ग लाइफ 10 में पीयू और नैनो सिलिकॉन तकनीक है, जिससे रंग सालों तक फीका नहीं पड़ता। इसमें 12 साल की वारंटी मिलती है।"},
+long_life_15:{cat:"Exterior Emulsion (Luxury)",name:"WeatherCoat Long Life 15",type:"compare",
+  usp:"Superior mechanical properties - high elasticity, superior dust & water repellence. Truly durable 16-year warranty - the longest in the Berger exterior range.",
+  pills:["Highest Elasticity in Range","Anti-fungal & Anti-algal","16 Years Warranty","10x More Shades vs Asian"],
+  ourCol:"Long Life 15", competitors:["Asian Ultima Dura Life"],
+  rows:[R("Coverage","60-70 sqft",false,["50-60 sqft"]),
+        R("Finish","High Sheen",false,["Rich Sheen"]),
+        R("No. of Shades","2000",true,["340"]),
+        R("Unique Advantage","Anti-fungal and anti-algal protection, colour retention",true,["4 Coat System (2 Base + 2 Top)"]),
+        PR("₹460-520/Ltr",["₹470-530/Ltr"])],
+  sourceNote:"Berger's official Weathercoat Long Life range page confirms warranty coverage between 8 and 15 years depending on the specific product, engineered for durability, dust/fungal resistance and low-VOC formulations. (bergerpaints.com/products/exterior-wall-coatings/brand/long-life)",
+  hindi:"लॉन्ग लाइफ 15 बर्जर की सबसे मज़बूत एक्सटीरियर पेंट है, जिसमें 16 साल की वारंटी मिलती है - बाज़ार में सबसे लंबी।"},
+
+/* ===== ENAMELS (unchanged) ===== */
+butterfly_gp_enamel:{cat:"Enamels",name:"Butterfly GP Enamel",type:"compare",
+  usp:"Glossy general-purpose enamel for interiors with the widest direct shade range (26) in this set. Green Pro certified.",
+  pills:["Glossy Enamel for Interiors","26 Direct Shades","Low VOC, Green Pro"],
+  ourCol:"Butterfly GP Enamel", competitors:["Asian Tractor Enamel","Dulux Promise Enamel"],
+  rows:[R("Coverage","70-90 sqft",false,["75-95 sqft","75-95 sqft"]),
+        R("Finish","Full Gloss",false,["Excellent Gloss","Smooth Mirror Like"]),
+        R("No. of Direct Shades","26",true,["17","-"]),
+        R("Unique Advantage","Low VOC, Green pro certified",true,["-","Low VOC"])]},
+luxol_satin:{cat:"Enamels",name:"Luxol Satin",type:"compare",
+  usp:"Pearl-like semi-gloss enamel with the widest shade bank (2000+) - free from lead & mercury heritage matched only by Asian.",
+  pills:["Pearl-Like Semi Gloss","2000+ Shades","Low VOC, Green Pro"],
+  ourCol:"Luxol Satin", competitors:["Asian Apcolite Premium Satin","Nerolac Satin Enamel","Dulux Satin Enamel"],
+  rows:[R("Coverage","90-110 sqft",false,["110-130 sqft","75-85 sqft",">107 sqft"]),
+        R("Finish","Pearl Like - Semi Gloss",false,["Soft Sheen","Satin","Soft Sheen"]),
+        R("No. of Shades","2000+",true,["1788","1250+","1400+"]),
+        R("Unique Advantage","Low VOC, Green pro certified",true,["Free from Lead & Mercury","-","Low VOC"])]},
+luxol_hi_gloss:{cat:"Enamels",name:"Luxol Hi Gloss",type:"compare",
+  usp:"Mirror-like gloss with ever-lasting finish, widest shade range (2000+) in the high-gloss enamel segment.",
+  pills:["Mirror-Like Gloss","2000+ Shades","Low VOC, Green Pro"],
+  ourCol:"Luxol Hi Gloss", competitors:["Asian Apcolite Advanced Enamel","Nerolac Synthetic Enamel","Dulux Gloss"],
+  rows:[R("Coverage","90-120 sqft",false,["90-100 sqft","85-100 sqft",">96 sqft"]),
+        R("Finish","Hi Gloss",false,["Hi Gloss","Glossy","Gloss"]),
+        R("No. of Shades","2000+",true,["1700+","As per Shade Card","-"]),
+        R("Unique Advantage","Low VOC, Green pro certified",true,["Lead Free","-","-"])]},
+luxol_pu_enamel:{cat:"Enamels",name:"Luxol PU Enamel",type:"compare",
+  usp:"Super Gloss (94@60°/80@20°) with extra coverage, anti-fungal protection and extra hiding power.",
+  pills:["Super Gloss","Extra Coverage & Hiding","Anti Fungal"],
+  ourCol:"Luxol PU Enamel", competitors:["Indigo PU Enamel"],
+  rows:[R("Coverage","95-125 sqft",true,["86-96 sqft"]),
+        R("Gloss Rating","94 @ 60° / 80 @ 20°",true,["88 @ 60°"]),
+        R("Unique Advantage","Super Gloss, Extra Coverage, Anti fungal, Extra hiding",false,["Rich glossy, Anti fungal, non yellowing"])]},
+luxol_7in1:{cat:"Enamels",name:"Luxol 7 in 1",type:"info",
+  usp:"Superior gloss and coverage with rust resistance and quick drying - 3-year warranty, Green Pro certified.",
+  pills:["Superior Gloss & Coverage","Rust Resistant","Quick Drying","3 Years Warranty"],
+  tds:[["Surface","Interior + Exterior - Metal & Wood/Wall"],["Solvent","T12 / Thinner 800"],["Dilution","8-10%"],["Coverage","110-130 sqft"],["Finish","Super Gloss"]]},
+
+/* ===== WOOD COATINGS (unchanged) ===== */
+fill_o_dent:{cat:"Wood Coatings",name:"Woodkeeper Fill-O-Dent",type:"info",
+  usp:"Wood dent and pin-hole filler for a better, smoother surface before priming - available in 4 base shades.",
+  pills:["Plugs Holes & Dents","4 Shades: White/Teak/Walnut/Dark Walnut"],
+  tds:[["Surface","Wood, MDF, Ply, Veneer"],["Dilution","No dilution to fill pin holes"],["Drying Time","15 Min SD / 90 Min HD"]]},
+wood_stainer:{cat:"Wood Coatings",name:"Woodkeeper Wood Stainer",type:"info",
+  usp:"Cloth-applied wood stainer in 8 shades for a touch of elegance - fast-drying solvent system.",
+  pills:["8 Shades","Cloth Application","Fast Drying"],
+  tds:[["Surface","Wood / Veneer"],["Coverage","6-7 SQM/Ltr/Coat"],["Finish","Matt"]]},
+epoxy_block_primer:{cat:"Wood Coatings",name:"Imperia Epoxy Block Primer",type:"info",
+  usp:"Prevents leaching and arrests secretion of wood resins/tannins/oils - also addresses adhesion, peeling and non-drying problems.",
+  pills:["Prevents Leaching","Base:Hardener = 1:1","Int + Ext Use"],
+  tds:[["Coverage","120 sqft/Ltr/Coat"],["Finish","Transparent (Colourless)"],["Pack Size","500 gm, 1 Kg"]]},
+nc_sanding_sealer:{cat:"Wood Coatings",name:"NC Sanding Sealer",type:"info",
+  usp:"Ideal undercoat for Woodkeeper 1K PU, NC Lacquer & Melamine - interior application only.",
+  pills:["Ideal Undercoat for 1K PU/Melamine","Interior Only"],
+  tds:[["Mixing Ratio","1:1 dilution"],["Application","12-16 passes for proper grain filling"]]},
+woodkeeper_1k_pu:{cat:"Wood Coatings",name:"Woodkeeper 1K PU",type:"info",
+  usp:"Applied by cloth, brush or spray - can also be applied over enamel coats for enhanced gloss retention.",
+  pills:["Interiors & Exteriors","Matt & Gloss Options","18 Month Shelf Life"],
+  tds:[["Solvent","Thinner 800/900"],["Dilution","Matt & Gloss 5-10%"],["Coverage","Matt 10-11 / Gloss 12-13 SQM/Ltr"],["Drying Time","8-10 Hrs (HD)"]]},
+woodkeeper_melamine:{cat:"Wood Coatings",name:"Woodkeeper Melamine 24 Carat",type:"info",
+  usp:"Full melamine polishing system with clear sealer, matt and gloss options for interiors.",
+  pills:["Clear Sealer/Matt/Gloss System","For Interiors"],
+  tds:[["Solvent","899 / NC Thinner"],["Mixing Ratio","9:1"],["Coverage","8-11 SQM/Ltr/Coat"]]},
+imperia_breatheasy:{cat:"Wood Coatings",name:"Imperia BreatheEasy (Water Based PU)",type:"info",
+  usp:"Water-based wood finish ideal for repainting - can be applied over refurbished wood without full stripping of earlier coats.",
+  pills:["Ideal for Repainting","Clear & Opaque Forms","Brush or Roller Application"],
+  tds:[["Use","Interior Furniture, Wooden Floor, Exterior Woodwork"],["Application","Brush or Roller"]]},
+
+/* ===== WATERPROOFING & CONSTRUCTION CHEMICALS ===== */
+power_plasticizer:{cat:"Waterproofing & Construction Chemicals",name:"HomeShield Power Plasticizer",type:"info",
+  usp:"High-strength multipurpose cement admixture delivering strength, internal waterproofing and improved workability.",
+  pills:["Adds Strength","Waterproofs from Inside","Improves Workability"],
+  tds:[["Dosage","200 ml for 50 kg cement bag"],["Pack Sizes","200ml, 1L, 5L, 10L, 20L"],["Indicative Price*","₹180-220/Ltr"]],
+  hindi:"पावर प्लास्टिसाइज़र सीमेंट में मिलाया जाता है। यह मज़बूती बढ़ाता है, अंदर से सीलन रोकता है और काम करना आसान बनाता है।"},
+tarfelt_dpc:{cat:"Waterproofing & Construction Chemicals",name:"HomeShield Tarfelt DPC",type:"info",
+  usp:"High-viscosity liquid-applied damp-proof coating with the highest elongation (180-200%) in the Berger DPC range.",
+  pills:["High Viscosity/Thickness","180-200% Elongation","1000 Micron Film"],
+  tds:[["Film Thickness","1000 Microns"],["Coverage","16 Sq.Ft/Kg/Coat"],["Pack Size","5Kg, 20Kg"],["Indicative Price*","₹230-270/Kg"]],
+  hindi:"टारफेल्ट डीपीसी नींव को सीलन से बचाने वाली मोटी परत वाली कोटिंग है।"},
+bituseal_dpc:{cat:"Waterproofing & Construction Chemicals",name:"HomeShield Bituseal DPC",type:"info",
+  usp:"Economical, lower-viscosity liquid-applied damp-proof coating for foundation waterproofing.",
+  pills:["Economical Option","400 Micron Film","80-100% Elongation"],
+  tds:[["Film Thickness","400 Microns"],["Coverage","40 Sq.Ft/Kg/Coat"],["Pack Size","5Kg, 20Kg"],["Indicative Price*","₹140-170/Kg"]],
+  hindi:"बिटूसील डीपीसी किफायती दाम में नींव की सीलन रोकने का काम करता है।"},
+latex_shield_2k:{cat:"Waterproofing & Construction Chemicals",name:"HomeShield Latex Shield 2K",type:"compare",
+  usp:"2-component cementitious waterproof coating with the best coverage (8-10 sqft/kg) in this comparison set.",
+  pills:["2-Component System","Resists 4 Bar+","1 Year Shelf Life"],
+  ourCol:"Latex Shield 2K", competitors:["SC Damp Block 2K","Dr. Fixit Pidifin 2K"],
+  rows:[R("Yield / Coverage","8-10 Sqft/Kg/2Coats",true,["5-6 Sqft/Kg/2Coats","6-8 Sqft/Kg/2Coats"]),
+        R("Waterproofing","Resists 4 Bar+",false,["Resists 5 Bar+","Resists 4 Bar+"]),
+        R("Pack Size","3, 15 Kg",false,["12 Kg","3, 15 Kg"]),
+        PR("₹210-250/Kg",["₹230-270/Kg","₹220-260/Kg"])],
+  hindi:"लेटेक्स शील्ड 2के दो भाग वाला वॉटरप्रूफिंग कोटिंग है, जो बाथरूम और टंकी जैसी जगहों पर काम आता है।"},
+wall_shield_2k:{cat:"Waterproofing & Construction Chemicals",name:"HomeShield Wall Shield 2K",type:"compare",
+  usp:"Acrylic cementitious waterproof coating that performs crystalline action on damp surfaces - a unique advantage Asian doesn't offer.",
+  pills:["Crystalline Action on Damp Walls","Resists 5 Bar+ / 4 Bar-"],
+  ourCol:"Wall Shield 2K", competitors:["Asian Ultrablock 2K"],
+  rows:[R("Yield / Coverage","20 sqft/Kg/Coat",true,["7.5-8 Sqft/Kg/2Coats"]),
+        R("Waterproofing","Resists 5 Bar+ / 4 Bar-",false,["Resists 5 Bar+"]),
+        R("Curing After 2nd Coat","4-6 Days",false,["3-5 Days"]),
+        R("Unique Advantage","Performs crystalline action on damp surface",true,["-"]),
+        PR("₹240-280/Kg",["₹250-290/Kg"])],
+  hindi:"वॉल शील्ड 2के गीली दीवार पर भी क्रिस्टलीय असर से काम करता है - यह खासियत एशियन के प्रोडक्ट में नहीं है।"},
+tankshield_pw:{cat:"Waterproofing & Construction Chemicals",name:"HomeShield Tankshield PW",type:"info",
+  usp:"Food-grade waterproofing product for concrete tanks and sumps - safe for potable water storage.",
+  pills:["Food Grade","For Concrete Tanks/Sumps"],
+  tds:[["Mix by Weight","1 Liquid : 2 Cement"],["Application","Applied inside by brush"],["Pack Size","3Kg, 15Kg"],["Indicative Price*","₹260-300/Kg"]],
+  hindi:"टैंकशील्ड पीडब्ल्यू पीने के पानी की टंकी के लिए फूड-ग्रेड वॉटरप्रूफिंग प्रोडक्ट है।"},
+tank_cool:{cat:"Waterproofing & Construction Chemicals",name:"HomeShield Tank Cool",type:"info",
+  usp:"Heat-resistant coating for plastic, metal and concrete tanks applied via a 3-component primer + midcoat + clear top coat system.",
+  pills:["Tank Cooling Coating","3-Component System","Plastic/Metal/Concrete"],
+  tds:[["System","1 Primer : 1 Midcoat : 1 Clear Top Coat"],["Application","Applied outside by brush"],["Pack Size","3L"],["Indicative Price*","₹450-550/Ltr"]],
+  hindi:"टैंक कूल प्लास्टिक, धातु और कंक्रीट की टंकी को गर्मी से बचाकर पानी ठंडा रखता है।"},
+crack_fill_paste:{cat:"Waterproofing & Construction Chemicals",name:"HomeShield Crack Fill Paste",type:"compare",
+  usp:"Ready-to-use putty-like crack filler for cracks in plaster on internal and external surfaces up to 5mm.",
+  pills:["Ready to Use","Fills Cracks up to 5mm","Interior + Exterior"],
+  ourCol:"Crack Fill Paste", competitors:["Asian SC Crack Seal","Dr. Fixit Crack X Paste"],
+  rows:[R("Yield","25-30 Running Mtr/Kg",true,["~22 Running Mtr/Kg","25-30 Running Mtr/Kg"]),
+        R("Crack Filling","Up to 5 mm",false,["Up to 5 mm","Up to 5 mm"]),
+        R("Pack Size","500 Gm, 1, 5 Kg",false,["500 Gm, 1, 5 Kg","200, 500 Gm, 1, 5 Kg"]),
+        PR("₹140-170/Kg",["₹150-180/Kg","₹145-175/Kg"])],
+  hindi:"क्रैक फिल पेस्ट दीवार की दरारें (5mm तक) भरने के लिए तैयार पुट्टी जैसा प्रोडक्ट है।"},
+advanced_latex_plus:{cat:"Waterproofing & Construction Chemicals",name:"HomeShield Advanced Latex Plus",type:"compare",
+  usp:"Premium SBR bonding polymer for repair & vertical surfacing - best coverage in this comparison.",
+  pills:["SBR Liquid Polymer","Excellent Crack Filling & Waterproofing"],
+  ourCol:"Advanced Latex Plus", competitors:["Dr. Fixit Super Latex"],
+  rows:[R("Yield","75-85 Sqft/2Coats/Kg",true,["70-80 Sqft/2Coat/Kg"]),
+        R("Crack Filling / Waterproofing",">5 mm / Excellent",false,[">5 mm / Excellent"]),
+        PR("₹260-300/Kg",["₹270-310/Kg"])],
+  hindi:"एडवांस्ड लेटेक्स प्लस मरम्मत और वर्टिकल सतह के लिए मज़बूत बॉन्डिंग पॉलीमर है।"},
+
+/* ===== ROOF COATINGS (part of Construction Chemicals) ===== */
+damp_shield_elasto:{cat:"Roof Coatings",name:"HS Damp Shield Elasto",type:"compare",
+  usp:"Anti-carbonation hi-build waterproofing with the deepest crack-bridging (up to 2-3mm) in this comparison.",
+  pills:["Anti Carbonation Hi-Build","PP Fiber + PU Modified System","10 Years Warranty"],
+  ourCol:"Damp Shield Elasto", competitors:["Asian Damp Proof","Dr. Fixit Roof Seal"],
+  rows:[R("Coverage","30 Sqft/Ltr/2Coats(H) - 55(V)",false,["9 Sqft/Ltr/Coat(H) - 20(V)","8 Sqft/Ltr/Coat"]),
+        R("Pack Size","1, 4, 10, 20 Ltr",false,["1, 4, 10, 20 Ltr","5, 20 Ltr"]),
+        R("Shelf Life","12 Months",false,["36 Months","12 Months"]),
+        R("Crack Filling","Up to 2-3 mm",true,["Up to 1 mm","Up to 2 mm"]),
+        PR("₹320-370/Ltr",["₹300-350/Ltr","₹310-360/Ltr"])],
+  hindi:"डैम्प शील्ड इलास्टो छत की सीलन रोकने वाला मज़बूत कोटिंग है, जो 2-3mm तक की दरार भी भर देता है।"},
+weathercoat_roof_guard:{cat:"Roof Coatings",name:"WeatherCoat Roof Guard",type:"compare",
+  usp:"PU Acrylic hybrid waterproofing for roofs & walls - 11-year warranty, the longest in the standard roof coating range.",
+  pills:["PU Acrylic Hybrid System","11 Years Warranty","200% Elongation"],
+  ourCol:"Roof Guard", competitors:["Asian Damp Proof Advanced","Dr. Fixit New Coat EZEE"],
+  rows:[R("Coverage","25-30 (H) / 30-35 (V)",false,["25 sqft/ltr/coat","~24 Sqft/Ltr/Coat"]),
+        R("Crack Bridging","Up to 2 mm",false,["Unmatched crack-bridging (per TDS)","Up to 1 mm"]),
+        PR("₹340-390/Ltr",["₹330-380/Ltr","₹320-370/Ltr"])],
+  hindi:"वेदरकोट रूफ गार्ड छत और दीवार दोनों के लिए है, इसमें 11 साल की वारंटी मिलती है।"},
+roof_kool_seal:{cat:"Roof Coatings",name:"Roof Kool & Seal",type:"compare",
+  usp:"Nano-fiber reinforced liquid-applied elastomeric membrane with 300% elongation and 10-year warranty.",
+  pills:["Nano-Fiber Reinforced","300% Elongation","10 Years Warranty"],
+  ourCol:"Roof Kool & Seal", competitors:["Dr. Fixit New Coat Coool"],
+  rows:[R("Coverage","20 Sqft/Ltr/Coat",false,["20 Sqft/Ltr/Coat"]),
+        R("Crack Filling","Up to 2 mm",false,["Up to 2 mm"]),
+        PR("₹300-340/Ltr",["₹310-350/Ltr"])],
+  hindi:"रूफ कूल एंड सील नैनो-फाइबर तकनीक से बना मज़बूत छत कोटिंग है।"},
+roof_kool_seal_pu:{cat:"Roof Coatings",name:"Roof Kool & Seal PU",type:"info",
+  usp:"Nano-fiber reinforced PU-acrylic hybrid membrane with the highest elongation (>350%) and crack-bridging (up to 3mm) in the Berger roof range - 15-year warranty.",
+  pills:["Highest Elongation in Range (>350%)","Up to 3mm Crack Bridging","15 Years Warranty"],
+  tds:[["RTB","PU Acrylic hybrid polymer"],["Crack Bridging","Up to 3 mm"],["Warranty","15 Years"],["Indicative Price*","₹420-470/Ltr"]],
+  hindi:"रूफ कूल एंड सील पीयू बर्जर की छत रेंज में सबसे ज़्यादा लचीला (350%+) है और 3mm तक दरार भर सकता है, 15 साल वारंटी के साथ।"},
+pu_roof_koat:{cat:"Roof Coatings",name:"PU Roof Koat",type:"compare",
+  usp:"Elastomeric liquid-applied PU-rich hybrid membrane - longer warranty (12 yrs) than Asian's Damp Proof Ultra.",
+  pills:["PU Rich Hybrid System","350% Elongation","12 Years Warranty"],
+  ourCol:"PU Roof Koat", competitors:["Asian Damp Proof Ultra"],
+  rows:[R("Coverage","8-9 Sqft/Ltr/Coat",false,["10 sqft/Ltr/coat"]),
+        R("Crack Filling","Up to 2-3 mm",true,["Up to 2.5 mm"]),
+        R("Warranty","12 Years",true,["10 Years"]),
+        PR("₹440-490/Ltr",["₹430-480/Ltr"])],
+  hindi:"पीयू रूफ कोट छत के लिए मज़बूत पीयू कोटिंग है, जिसकी वारंटी एशियन से ज़्यादा (12 साल) है।"},
+
+/* ===== TILING SOLUTIONS (unchanged) ===== */
+tile_adhesive:{cat:"Tiling Solutions",name:"HomeShield Tile Adhesive",type:"info",
+  usp:"Modified cement-based tile adhesive for interior floor tiling application.",
+  pills:["Interior Floor Tiling","Modified Cement Based","EU Class C1 T"],
+  tds:[["Pack Size","30Kg, 20Kg, 5Kg"],["Colours","Grey, White"],
+       ["IS / EU Standard","Type 1 / C1 T"],["Tile Type","Ceramic"],["Tile Size","1X1, 2X2 ft"],
+       ["Max Application Height","Approx 5 ft"],["Water Mixing Ratio","22% (of bag weight)"],
+       ["Pull-Off Strength","0.5 N/mm²"],["Application","Indoor - Floor only"],
+       ["Open Time (Tile Fixing Time)","10 Min"],["Pot Life","60 Min"],
+       ["Foot Traffic OK After","24 Hrs"],["Final Setting / Full Cure","28 Days"]]},
+tile_adhesive_plus:{cat:"Tiling Solutions",name:"Tile Adhesive Plus",type:"info",
+  usp:"High-performance cement-based tile adhesive for interior/exterior horizontal & vertical tiles up to 2ft x 2ft, tile-on-tile and non-vitrified tiles.",
+  pills:["Excellent Adhesion","Flexible, Low Shrinkage","Int/Ext, Tile-on-Tile","EU Class C2 T"],
+  tds:[["Pack Size","30Kg, 20Kg, 5Kg"],["Colours","Grey, White"],
+       ["IS / EU Standard","Type 2 / C2 T"],["Tile Type","Vitrified"],["Tile Size","2X2, 2X4 ft"],
+       ["Max Application Height","Up to 10 ft"],["Water Mixing Ratio","23% (of bag weight)"],
+       ["Pull-Off Strength","1 N/mm²"],["Application","Indoor Floor/Walls + Outdoor 2X2, Tile-on-Tile (dry areas)"],
+       ["Open Time (Tile Fixing Time)","15 Min"],["Pot Life","90 Min"],
+       ["Foot Traffic OK After","24 Hrs"],["Final Setting / Full Cure","28 Days"]]},
+tile_bond_antislip:{cat:"Tiling Solutions",name:"Tile Bond Anti-Slip",type:"info",
+  usp:"For interior/exterior large-size tiles (>2ft x 2ft), vitrified tile, marble, granite & natural stone application.",
+  pills:["Large Format Tiles","Vitrified/Marble/Granite/Natural Stone","EU Class C2 TE"],
+  tds:[["Pack Size","40Kg, 25Kg"],["Colours","Grey, White"],
+       ["IS / EU Standard","Type 3 / C2 TE"],["Tile Type","Vitrified, Window Framing Granite, Natural Stones (except Red & Black)"],
+       ["Tile Size","Small tiles up to large format (up to 4X6 ft)"],
+       ["Max Application Height","Up to 20 ft"],["Water Mixing Ratio","24% (of bag weight)"],
+       ["Pull-Off Strength","1.5 N/mm²"],["Application","Indoor & Outdoor, Horizontal & Vertical"],
+       ["Open Time (Tile Fixing Time)","20 Min"],["Pot Life","90 Min"],
+       ["Foot Traffic OK After","24 Hrs"],["Final Setting / Full Cure","28 Days"]],
+  note:"Not for Red or Black natural stones - these can stain/react; use a stone-specific adhesive for those."},
+tile_bond_hiflex:{cat:"Tiling Solutions",name:"Tile Bond Hi-Flex",type:"info",
+  usp:"For tiles, stones, granite, marble on external walls, lobby floors/walls and terraces where there is heavy traffic and temperature variation.",
+  pills:["High Flexibility","Heavy Traffic Areas","Handles Temperature Variation","EU Class C2 TE S1","Tallest Application Height in Range"],
+  tds:[["Pack Size","40Kg, 25Kg"],["Colours","Grey, White"],
+       ["IS / EU Standard","Type 4 / C2 TE S1"],["Tile Type","All types of tiles & stones"],
+       ["Tile Size","All sizes"],["Max Application Height","Up to 60 ft - highest in the Berger tile range"],
+       ["Water Mixing Ratio","24% (of bag weight)"],["Pull-Off Strength","1.5 N/mm²"],
+       ["Application","Indoor & Outdoor, Horizontal & Vertical"],
+       ["Open Time (Tile Fixing Time)","20 Min"],["Pot Life","90 Min"],
+       ["Foot Traffic OK After","24 Hrs"],["Final Setting / Full Cure","28 Days"]]},
+tile_wonderflex:{cat:"Tiling Solutions",name:"Wonderflex",type:"info",
+  usp:"Specialised high-flex (S1) adhesive for artificial stone and multi-substrate applications where standard tile adhesives don't apply.",
+  pills:["Artificial Stone Specialist","Multi-Substrate Application","EU Class R2 T"],
+  tds:[["IS / EU Standard","Type 5 / R2 T"],["Tile/Substrate Type","Artificial Stone and Multi-Substrate application"],["Use Case","Misc / specialised substrates"]],
+  note:"This is a reaction-resin (R2 T) adhesive, different in chemistry from the cement-based (C1/C2) products above - use it specifically for artificial stone and mixed-substrate jobs. Full technical parameters (mixing ratio, open time, pot life) weren't in the reference data - confirm with your Depot/Technical team before site use."},
+powder_tile_grout:{cat:"Tiling Solutions",name:"HomeShield Powder Tile Grout",type:"info",
+  usp:"Cement-based ready-to-use joint filler for tile gaps up to 5mm, interior/exterior.",
+  pills:["Gaps up to 5mm","Interior + Exterior","11 Shades"],
+  tds:[["Colours Available","11 shades"]]},
+epoxy_tile_grout_3p:{cat:"Tiling Solutions",name:"Epoxy Tile Grout (3-Pack)",type:"info",
+  usp:"3-pack system for interior/exterior horizontal & vertical tile joints up to 15mm - excellent waterproofing for kitchens, bathrooms & pools.",
+  pills:["Joints up to 15mm","Excellent Waterproofing","7 Shades"],
+  tds:[["Colours Available","7 shades"]]},
+epoxy_tile_grout_2p:{cat:"Tiling Solutions",name:"Epoxy Tile Grout (2-Pack)",type:"info",
+  usp:"2-pack system for interior/exterior tile joints up to 15mm with excellent waterproofing for kitchens, bathrooms & pools.",
+  pills:["Joints up to 15mm","Excellent Waterproofing","5 Shades"],
+  tds:[["Colours Available","5 shades"]]},
+tile_cleaner:{cat:"Tiling Solutions",name:"HomeShield Tile Cleaner",type:"info",
+  usp:"Acidic tile cleaner for all types of hard tile surfaces & grouts - removes mineral deposits and soap scum from sanitaryware, bathrooms and pools.",
+  pills:["Removes Mineral Deposits & Soap Scum","For Sanitaryware/Bathroom/Pools"],
+  tds:[["Type","Acidic tile cleaner"]]}
+};
+
+/* ---------- build dropdown grouped by category ---------- */
+let officer = {};
+const sel = document.getElementById('productSelect');
+sel.innerHTML = '<option value="">— Choose a product —</option>';
+const cats = {};
+Object.keys(PRODUCTS).forEach(k=>{
+  const c = PRODUCTS[k].cat;
+  if(!cats[c]) cats[c]=[];
+  cats[c].push(k);
+});
+Object.keys(cats).forEach(c=>{
+  const og = document.createElement('optgroup');
+  og.label = c;
+  cats[c].forEach(k=>{
+    const opt = document.createElement('option');
+    opt.value = k; opt.textContent = PRODUCTS[k].name;
+    og.appendChild(opt);
+  });
+  sel.appendChild(og);
+});
+
+function submitEntry(){
+  const empidEl = document.getElementById('empid');
+  const empid = empidEl.value.trim();
+  const wrap = document.getElementById('f-empid');
+  if(!empid){ wrap.classList.add('error'); empidEl.focus(); return; }
+  wrap.classList.remove('error');
+
+  officer = {
+    empid: empid,
+    name: document.getElementById('ename').value.trim(),
+    depot: document.getElementById('depot').value.trim(),
+    region: document.getElementById('region').value,
+    tty: document.getElementById('tty').value,
+    email: document.getElementById('email').value.trim()
+  };
+
+  const chip = document.getElementById('officerChip');
+  chip.style.display = 'inline-block';
+  chip.textContent = (officer.name || officer.empid) + (officer.region ? " · " + officer.region : "");
+
+  document.getElementById('screen-entry').classList.remove('active');
+  document.getElementById('screen-product').classList.add('active');
+}
+function goBack(){
+  document.getElementById('screen-product').classList.remove('active');
+  document.getElementById('screen-entry').classList.add('active');
+}
+
+function renderProduct(){
+  const key = document.getElementById('productSelect').value;
+  const out = document.getElementById('productOutput');
+  if(!key){ out.innerHTML = ""; return; }
+  const p = PRODUCTS[key];
+
+  let hero = `
+    <div class="product-hero">
+      <div class="cat">${p.cat}</div>
+      <h2>${p.name}</h2>
+      <div class="usp">${p.usp}</div>
+      <div class="pill-row">${p.pills.map(x=>`<div class="pill">${x}</div>`).join("")}</div>
+    </div>`;
+
+  let body = "";
+  let hasPriceRow = false;
+  if(p.type === "compare" && p.competitors && p.competitors.length){
+    let compHeaders = p.competitors.map(c => `<th>${c}</th>`).join("");
+    let bodyRows = p.rows.map(r => {
+      if(r.isPrice) hasPriceRow = true;
+      let compCells = r.c.map(v => `<td>${v}</td>`).join("");
+      let rowClass = r.isPrice ? ' class="price-row"' : '';
+      return `<tr${rowClass}><td class="attr-col">${r.attr}</td><td class="us-col">${r.us}${r.win ? '<span class="badge-win">OUR EDGE</span>' : ''}${r.isPrice ? '<span class="badge-est">EST.</span>' : ''}</td>${compCells}</tr>`;
+    }).join("");
+    body = `
+      <div class="section-title">Technical &amp; Competition Comparison</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Attribute</th><th>${p.ourCol}</th>${compHeaders}</tr></thead>
+          <tbody>${bodyRows}</tbody>
+        </table>
+      </div>`;
+  } else {
+    let tdsHtml = (p.tds||[]).map(t=>{
+      const isPrice = t[0].toLowerCase().indexOf('price') !== -1;
+      if(isPrice) hasPriceRow = true;
+      return `<div class="tds-item${isPrice ? ' price-item' : ''}"><div class="k">${t[0]}</div><div class="v">${t[1]}</div></div>`;
+    }).join("");
+    body = `
+      <div class="section-title">Berger Technical Reference</div>
+      <div class="info-list">
+        <div class="tds-grid">${tdsHtml}</div>
+        ${p.note ? `<div class="no-comp">${p.note}</div>` : ''}
+      </div>`;
+  }
+
+  let priceNoteHtml = hasPriceRow ? `<div class="price-note"><b>* Indicative only:</b> pricing above is estimated from public online retail/marketplace listings, not official Berger or competitor MRP. Cross-check against the current DPL before quoting.</div>` : "";
+  let sourceHtml = p.sourceNote ? `<div class="source-note"><b>Web Reference:</b> ${p.sourceNote}</div>` : "";
+
+  let fmHtml = "";
+  if(p.firstMover){
+    fmHtml = `<div class="fm-card">
+      <div class="fm-title">First Mover Advantage</div>
+      <p>${p.firstMover}</p>
+      ${p.firstMoverDemo ? `<div class="fm-demo">${p.firstMoverDemo}</div>` : ''}
+    </div>`;
+  }
+
+  let hiHtml = "";
+  if(p.hindi){
+    hiHtml = `<div class="hi-card">
+      <div class="hi-title">हिंदी में सारांश (Hindi Summary)</div>
+      <p>${p.hindi}</p>
+    </div>`;
+  }
+
+  out.innerHTML = hero + body + priceNoteHtml + sourceHtml + fmHtml + hiHtml + `
+    <footer class="note">
+      Data indicative — for field reference only. Prices/specs may vary by state &amp; scheme.<br>
+      Session: ${officer.empid}${officer.region ? " · " + officer.region : ""}
+    </footer>`;
+}
+</script>
+</body>
+</html>
