@@ -53,6 +53,12 @@
   .home-title{font-size:16px;font-weight:700;color:var(--berger-navy);margin:2px 0 4px;}
   .home-sub{font-size:12.5px;color:var(--muted);margin-bottom:14px;}
   .mic-row{display:flex;gap:8px;margin-bottom:16px;}
+  .mic-row input{flex:1;min-width:0;padding:11px;border:1.5px solid var(--berger-navy);border-radius:8px;font-size:13.5px;}
+  .go-btn{flex:0 0 auto;padding:0 14px;border:none;border-radius:8px;background:var(--berger-red);color:#fff;font-weight:700;font-size:13px;cursor:pointer;}
+  .match-note{background:#e8f0fb;border:1.5px solid #4a78c2;color:#173a73;border-radius:10px;padding:10px 12px;font-size:12.5px;line-height:1.5;margin-bottom:12px;}
+  .res-item{background:#fff;border:1px solid var(--line);border-radius:10px;padding:11px 13px;margin-bottom:8px;cursor:pointer;}
+  .res-item b{display:block;font-size:13.5px;color:var(--berger-navy);}
+  .res-item small{display:block;font-size:11.5px;color:var(--muted);margin-top:3px;}
   .mic-row select{flex:1;padding:11px;border:1.5px solid var(--berger-navy);border-radius:8px;font-size:13.5px;font-weight:600;color:var(--berger-navy);}
   .mic-btn{flex:0 0 auto;width:46px;border:1.5px solid var(--berger-navy);border-radius:8px;background:#fff;font-size:18px;cursor:pointer;}
   .mic-btn.listening{background:var(--berger-red);border-color:var(--berger-red);color:#fff;animation:pulse 1.1s infinite;}
@@ -135,7 +141,6 @@
 </head>
 <body>
 <div class="app">
-  <div class="demo-flag">⚠ FULL BUILD: All 8 categories live with ID-gated entry, pricing, PDF and usage logging. Emulsions, Putty, Primers and Enamels show real Berger photos; Wood Coatings, Waterproofing/Chemicals and Tiling use verified technical data.</div>
   <header>
     <div class="brand-mark">BERGER PRODUCT<span> GUIDE</span></div>
     <div class="tag">Field Ready Reckoner</div>
@@ -180,6 +185,7 @@
     <section class="screen" id="screen-home">
       <div class="home-title">Welcome, Officer 👋</div>
       <div class="home-sub">Pick a category, or search by voice.</div>
+      <div class="mic-row"><input type="text" id="qInput" placeholder="Type a Berger or competitor product (e.g. Superclean 3 in 1)" onkeydown="if(event.key==='Enter')searchTyped()"><button type="button" class="go-btn" onclick="searchTyped()">Search</button></div>
       <div class="mic-row">
         <select id="quickSelect" onchange="onQuickSelect()"><option value="">— or jump straight to a product —</option></select>
         <button type="button" class="mic-btn" id="micBtn" onclick="startVoiceSearch()">🎤</button>
@@ -206,6 +212,14 @@
         <div class="rep-msg" id="repMsg"></div>
       </div>
       <div class="table-wrap" id="repWrap" style="display:none;"></div>
+    </section>
+
+    <!-- SEARCH RESULTS (competitor lookups) -->
+    <section class="screen" id="screen-results">
+      <button class="back-btn" onclick="goHome()">← Back</button>
+      <div class="home-title" id="resTitle">Closest Berger products</div>
+      <div class="home-sub" id="resSub"></div>
+      <div id="resList"></div>
     </section>
 
     <!-- PRODUCT DETAIL -->
@@ -1219,6 +1233,7 @@ function closeProductTracking(){
 }
 
 /* ============ PRODUCT RENDER ============ */
+let pendingMatchNote = '';
 function openProduct(key){
   closeProductTracking(); // close out time on any previously open product first
   const p = PRODUCTS[key];
@@ -1252,7 +1267,9 @@ function openProduct(key){
   let fmHtml = p.firstMover ? `<div class="fm-card"><div class="fm-title">First Mover Advantage</div><p>${p.firstMover}</p>${p.firstMoverDemo?`<div class="fm-demo">${p.firstMoverDemo}</div>`:''}</div>` : '';
   let hiHtml = p.hindi ? `<div class="hi-card"><div class="hi-title">हिंदी में सारांश</div><p>${p.hindi}</p></div>` : '';
 
-  document.getElementById('productBody').innerHTML = `
+  const noteHtml = pendingMatchNote ? '<div class="match-note">'+pendingMatchNote+'</div>' : '';
+  pendingMatchNote = '';
+  document.getElementById('productBody').innerHTML = noteHtml + `
     <div class="product-hero">
       <img class="product-hero-img" src="${p.heroImg}" alt="${p.name}">
       <div class="txt"><div class="cat">${p.cat}</div><h2>${p.name}</h2><div class="usp">${p.usp}</div></div>
@@ -1324,6 +1341,75 @@ function findBestProductMatch(transcript){
   });
   return { key: best, score: bestScore };
 }
+/* ---------- COMPETITOR-AWARE SEARCH ---------- */
+const BRAND_WORDS = ["asian","paints","nerolac","dulux","opus","birla","jk","white","dr","fixit","smart","care","smartcare","kansai","indigo","sc","trucare","akzo","nobel"];
+const GENERIC_WORDS = ["emulsion","primer","paint","putty","enamel","exterior","interior","wall","metal","cement","gloss","matt","sheen","satin"];
+let _compIdx = null;
+function compIndex(){
+  if(_compIdx) return _compIdx;
+  _compIdx = {};
+  Object.keys(PRODUCTS).forEach(k=>{ (PRODUCTS[k].competitors||[]).forEach(c=>{ (_compIdx[c] = _compIdx[c] || []).indexOf(k) === -1 && _compIdx[c].push(k); }); });
+  return _compIdx;
+}
+function findCompetitor(text){
+  const t = normalizeText(text);
+  const toks = t.split(' ').filter(w=>w.length>2 && BRAND_WORDS.indexOf(w)===-1 && GENERIC_WORDS.indexOf(w)===-1 && STOPWORDS.indexOf(w)===-1);
+  const qc = toks.join('');
+  let best = 0, names = [];
+  if(!toks.length) return {score:0,names:[]};
+  Object.keys(compIndex()).forEach(c=>{
+    const cn = normalizeText(c), cc = cn.replace(/ /g,''), ct = cn.split(' ');
+    let sc = 0;
+    if(qc.length >= 5 && cc.indexOf(qc) !== -1) sc = 10 + qc.length;
+    else toks.forEach(w=>{ if(ct.indexOf(w) !== -1) sc += 3; else if(w.length >= 6 && cc.indexOf(w) !== -1) sc += 2; });
+    if(sc > best){ best = sc; names = [c]; } else if(sc === best && sc > 0){ names.push(c); }
+  });
+  return {score:best, names:names};
+}
+function resolveQuery(text){
+  const st = document.getElementById('micStatus');
+  const say = (cls,msg)=>{ st.className = 'mic-status ' + cls; st.textContent = msg; };
+  text = (text||'').trim();
+  if(!text) return;
+  logUsage('search', 'Search', text, 0);
+  const b = findBestProductMatch(text);
+  const c = findCompetitor(text);
+  if(b.key && (b.score >= 8 || (b.score >= 2 && b.score > c.score))){
+    say('ok', '✓ "' + text + '" → ' + PRODUCTS[b.key].name);
+    pendingMatchNote = ''; openProduct(b.key); return;
+  }
+  if(c.score >= 3){
+    const hits = [];
+    c.names.forEach(n=>compIndex()[n].forEach(k=>{
+      const h = hits.find(x=>x.k===k);
+      if(h){ if(h.comps.indexOf(n)===-1) h.comps.push(n); } else hits.push({k:k, comps:[n]});
+    }));
+    if(hits.length === 1){
+      say('ok', '✓ "' + text + '" is a competitor product → closest Berger: ' + PRODUCTS[hits[0].k].name);
+      pendingMatchNote = 'Closest Berger match for <b>' + hits[0].comps.join(', ') + '</b> (you searched: “' + text.replace(/</g,'&lt;') + '”). The comparison table below shows how they stack up.';
+      openProduct(hits[0].k); return;
+    }
+    showResults(text, hits); return;
+  }
+  if(b.key && b.score >= 2){ say('ok', '✓ "' + text + '" → ' + PRODUCTS[b.key].name); pendingMatchNote=''; openProduct(b.key); return; }
+  say('warn', '✗ "' + text + '" - no match found. Try the product name or a different spelling, or use the dropdown.');
+}
+function showResults(text, hits){
+  document.getElementById('resTitle').textContent = 'Closest Berger products';
+  document.getElementById('resSub').textContent = 'For “' + text + '” - pick the one you want to see.';
+  const wrap = document.getElementById('resList'); wrap.innerHTML = '';
+  hits.forEach(h=>{
+    const d = document.createElement('div'); d.className = 'res-item';
+    d.onclick = ()=>{ pendingMatchNote = 'Closest Berger match for <b>' + h.comps.join(', ') + '</b> (you searched: “' + text.replace(/</g,'&lt;') + '”).'; openProduct(h.k); };
+    d.innerHTML = '<b>' + PRODUCTS[h.k].name + '</b><small>' + PRODUCTS[h.k].cat + ' · compared with ' + h.comps.join(', ') + '</small>';
+    wrap.appendChild(d);
+  });
+  document.getElementById('micStatus').className = 'mic-status ok';
+  document.getElementById('micStatus').textContent = '✓ Found ' + hits.length + ' Berger products for "' + text + '"';
+  showScreen('screen-results');
+}
+function searchTyped(){ const v = document.getElementById('qInput').value; resolveQuery(v); }
+
 function startVoiceSearch(){
   const micBtn = document.getElementById('micBtn');
   const status = document.getElementById('micStatus');
@@ -1341,15 +1427,7 @@ function startVoiceSearch(){
 
   recognition.onresult = function(event){
     const transcript = event.results[0][0].transcript;
-    const match = findBestProductMatch(transcript);
-    if(match.key && match.score >= 2){
-      status.className = 'mic-status ok';
-      status.textContent = '✓ Heard: "' + transcript + '" → Matched: ' + PRODUCTS[match.key].name;
-      openProduct(match.key);
-    } else {
-      status.className = 'mic-status warn';
-      status.textContent = '✗ Heard: "' + transcript + '" — no clear match in Interior Emulsion. Try again or use the dropdown.';
-    }
+    resolveQuery(transcript);
   };
   recognition.onerror = function(event){
     status.className = 'mic-status warn';
